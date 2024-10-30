@@ -1,0 +1,4 @@
+version: 1.0.0 
+location: /Users/new/js-app-master/app
+linux_name: femi
+user_home_dir: /home/femi{{linux_name}}

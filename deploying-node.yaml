@@ -5,45 +5,43 @@
     - name: Update apt repo and cache
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
     - name: Install nodejs and npm
-      apt: 
+      apt:
         pkg:
           - nodejs
           - npm
 
 
-- name: Create a linux user for the app
+- name: Create new linux user for node app
   hosts: 64.226.81.202
   tasks:
-    - name: create lixus user
-      user: 
-        name: femi
+    - name: Create linux user
+      user:
+        name: "{{linux_name}}"
         comment: femi admin
         group: admin
 
-- name: Deploying nodejs app
+
+- name: Deploy nodejs app
   hosts: 64.226.81.202
   become: True
-  become_user: femi
+  become_user: "{{linux_name}}"
+  vars_files:
+    project-variable
   tasks:
-    - name: Copy node app to to a server
-      copy:
-        src: /Users/new/js-app-master/app/developing-with-docker-1.0.0.tgz
-        dest: /home/femi
     - name: Unpack the nodejs file
       unarchive:
-        src: /home/femi/app-docker-1.0.0.tgz
-        dest: /home/femi
-        remote_src: yes
-    - name: Install Dependencies
+        src: /Users/new/js-app-master/app/developing-with-docker-1.0.0.tgz
+        dest: "{{user_home_dir}}"
+    - name: Install dependencies
       npm:
-        path: /home/femi/package
+        path: "{{user_home_dir}}/package"
     - name: Start the application
-      command: 
-        chdir: /home/femi/package/app
+      command:
+        chdir: "{{user_home_dir}}/package/app"
         cmd: node server
       async: 1000
-      poll:
-    - name: Ensure app is up and running
+      poll: 0
+    - name: Ensure app is running
       shell: ps aux | grep node
       register: app_status
     - debug: msg={{app_status.stdout_lines}}
